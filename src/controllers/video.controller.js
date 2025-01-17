@@ -10,6 +10,7 @@ import {
 } from "../utils/cloudinary.js";
 
 import { Video } from "../models/video.model.js";
+import { Like } from "../models/like.model.js";
 
 export const createVideo = asyncHandler(async (req, res) => {
   const { title, prompt } = req.body;
@@ -76,6 +77,8 @@ export const deleteVideo = asyncHandler(async (req, res) => {
 
   await deleteFromCloudinary(video.thumbnailId);
   await deleteVideoFromCloudinary(video.videoId);
+
+  await Like.deleteMany({ videoId: vidId });
 
   const result = await Video.deleteOne({ _id: vidId });
 

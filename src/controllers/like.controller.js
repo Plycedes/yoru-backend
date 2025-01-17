@@ -5,9 +5,10 @@ import { ApiError } from "../utils/ApiError.js";
 import { Like } from "../models/like.model.js";
 
 export const createLike = asyncHandler(async (req, res) => {
-  const { videoId, userId, creatorId } = req.body;
+  const { videoId, creatorId } = req.body;
+  const userId = req.user?._id;
 
-  if (!videoId || !userId || !creatorId) {
+  if (!videoId || !creatorId) {
     throw new ApiError(400, "No field can be empty");
   }
 
@@ -34,4 +35,19 @@ export const createLike = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, likeCreated, "Bookmark created successfully"));
+});
+
+export const videoLiked = asyncHandler(async (req, res) => {
+  const { videoId } = req.body;
+  const userId = req.user?._id;
+
+  if (!videoId) {
+    throw new ApiError(400, "VideoId is required");
+  }
+
+  const alreadyLiked = await Like.findOne({
+    $and: [{ videoId: videoId }, { userId: userId }],
+  });
+
+  return res.status(200).json(new ApiResponse(200, alreadyLiked, "Successful"));
 });
