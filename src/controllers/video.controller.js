@@ -85,3 +85,63 @@ export const deleteVideo = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Error deleteing the video");
   }
 });
+
+export const getAllVideos = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+
+  const pipeline = [
+    {
+      $lookup: {
+        from: "users",
+        localField: "creator",
+        foreignField: "_id",
+        as: "creatorDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$creatorDetails",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+        prompt: 1,
+        thumbnail: 1,
+        video: 1,
+        "creatorDetails.username": 1,
+        "creatorDetails.avatar": 1,
+      },
+    },
+    {
+      $sort: { createdAt: -1 },
+    },
+    {
+      $skip: (page - 1) * limit,
+    },
+    {
+      $limit: parseInt(limit),
+    },
+  ];
+
+  const videos = await Video.aggregate(pipeline);
+  const totalVideos = await Video.countDocuments();
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        data: videos,
+        pagination: {
+          total: totalVideos,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages: Math.ceil(totalVideos / limit),
+        },
+      },
+      "Fetched all videos successfully"
+    )
+  );
+});
