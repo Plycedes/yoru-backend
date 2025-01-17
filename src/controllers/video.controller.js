@@ -114,6 +114,7 @@ export const getAllVideos = asyncHandler(async (req, res) => {
         prompt: 1,
         thumbnail: 1,
         video: 1,
+        "creatorDetails._id": 1,
         "creatorDetails.username": 1,
         "creatorDetails.avatar": 1,
       },
