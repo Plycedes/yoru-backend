@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -6,6 +8,7 @@ import {
   deleteFromCloudinary,
   deleteVideoFromCloudinary,
 } from "../utils/cloudinary.js";
+
 import { Video } from "../models/video.model.js";
 
 export const createVideo = asyncHandler(async (req, res) => {
@@ -144,4 +147,26 @@ export const getAllVideos = asyncHandler(async (req, res) => {
       "Fetched all videos successfully"
     )
   );
+});
+
+export const getUserVideos = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+  console.log(userId);
+
+  const pipeline = [
+    {
+      $match: { creator: userId },
+    },
+    {
+      $sort: { createdAt: -1 },
+    },
+  ];
+
+  const userVideos = await Video.aggregate(pipeline);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, userVideos, "Fetched user's videos successfully")
+    );
 });

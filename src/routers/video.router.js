@@ -5,6 +5,7 @@ import {
   createVideo,
   deleteVideo,
   getAllVideos,
+  getUserVideos,
 } from "../controllers/video.controller.js";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.route("/create-video").post(
 
 router.route("/delete-video").post(verifyJWT, deleteVideo);
 router.route("/get-all-videos").get(getAllVideos);
+router.route("/get-user-videos").get(verifyJWT, getUserVideos);
 
 export default router;
