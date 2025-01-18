@@ -51,3 +51,20 @@ export const videoLiked = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, alreadyLiked, "Successful"));
 });
+
+export const deleteLike = asyncHandler(async (req, res) => {
+  const { videoId } = req.body;
+  const userId = req.user?._id;
+
+  const result = await Like.deleteOne({
+    $and: [{ videoId }, { userId }],
+  });
+
+  if (result.deletedCount > 0) {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Removed bookmark successfully"));
+  } else {
+    throw new ApiError(409, "Bookmark already removed or was never created");
+  }
+});
