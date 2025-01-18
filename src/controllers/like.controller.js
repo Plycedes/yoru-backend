@@ -13,7 +13,7 @@ export const createLike = asyncHandler(async (req, res) => {
   }
 
   const alreadyLiked = await Like.findOne({
-    $and: [{ videoId: videoId }, { userId: userId }],
+    $and: [{ videoId }, { userId }],
   });
 
   if (alreadyLiked) {
@@ -46,7 +46,7 @@ export const videoLiked = asyncHandler(async (req, res) => {
   }
 
   const alreadyLiked = await Like.findOne({
-    $and: [{ videoId: videoId }, { userId: userId }],
+    $and: [{ videoId }, { userId }],
   });
 
   return res.status(200).json(new ApiResponse(200, alreadyLiked, "Successful"));
@@ -67,4 +67,15 @@ export const deleteLike = asyncHandler(async (req, res) => {
   } else {
     throw new ApiError(409, "Bookmark already removed or was never created");
   }
+});
+
+export const getLikesCount = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+
+  const likes = await Like.find({ creatorId: userId });
+  const likesCount = likes.length;
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { bookmarksCount: likesCount }, "Successfull"));
 });
