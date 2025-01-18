@@ -17,7 +17,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.send({ status: "OK" });
+  res.send({ statusCode: 200, status: "OK" });
 });
 
 import userRouter from "./routers/user.router.js";
