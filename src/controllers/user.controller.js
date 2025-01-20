@@ -223,7 +223,11 @@ export const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file is missing");
   }
 
+  console.log("File recieved");
+
   const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+  console.log("File uploaded");
 
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading avatar");
