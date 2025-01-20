@@ -20,7 +20,7 @@ router.route("/create-video").post(
   createVideo
 );
 
-router.route("/delete-video").delete(verifyJWT, deleteVideo);
+router.route("/delete-video").post(verifyJWT, deleteVideo);
 router.route("/get-all-videos").get(getAllVideos);
 router.route("/get-user-videos").get(verifyJWT, getUserVideos);
 router.route("/get-liked-videos").get(verifyJWT, getLikedVideos);
