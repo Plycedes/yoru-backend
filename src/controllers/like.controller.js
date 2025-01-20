@@ -65,7 +65,15 @@ export const deleteLike = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, {}, "Removed bookmark successfully"));
   } else {
-    throw new ApiError(409, "Bookmark already removed or was never created");
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          {},
+          "Bookmark already removed or was never created"
+        )
+      );
   }
 });
 
