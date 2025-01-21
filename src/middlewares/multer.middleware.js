@@ -3,7 +3,7 @@ import { v4 } from "uuid";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./files/temp");
+    cb(null, "./src/files/temp");
   },
   filename: function (req, file, cb) {
     cb(null, v4() + file.originalname);

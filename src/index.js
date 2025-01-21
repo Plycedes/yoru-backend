@@ -11,7 +11,7 @@ connectDB()
     app.listen(process.env.PORT || 8000, () => {
       console.log(`Server Running at PORT: ${process.env.PORT}`);
     });
-    const tempDir = path.join("./files/temp");
+    const tempDir = path.join("./src/files/temp");
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
       console.log("Folder created");
