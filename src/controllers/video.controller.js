@@ -235,7 +235,7 @@ export const getLikedVideos = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-        _id: 0,
+        _id: 1,
         videoId: "$likedVideos._id",
         title: "$likedVideos.title",
         thumbnail: "$likedVideos.thumbnail",
