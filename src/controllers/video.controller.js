@@ -241,10 +241,9 @@ export const getLikedVideos = asyncHandler(async (req, res) => {
         thumbnail: "$likedVideos.thumbnail",
         video: "$likedVideos.video",
         prompt: "$likedVideos.prompt",
-        creator: {
-          username: "$creatorDetails.username",
-          avatar: "$creatorDetails.avatar",
-        },
+        "creatorDetails._id": 1,
+        "creatorDetails.username": 1,
+        "creatorDetails.avatar": 1,
       },
     },
   ];
