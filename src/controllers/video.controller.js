@@ -245,6 +245,9 @@ export const getLikedVideos = asyncHandler(async (req, res) => {
         "creatorDetails.avatar": 1,
       },
     },
+    {
+      $sort: { createdAt: -1 },
+    },
   ];
 
   const likedVideos = await Like.aggregate(pipeline);
