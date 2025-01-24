@@ -1,5 +1,6 @@
 import { createCanvas } from "canvas";
 import fs from "fs";
+import { v4 } from "uuid";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
@@ -14,7 +15,9 @@ async function generateProfilePicture(username) {
       .map((word) => word[0].toUpperCase())
       .join("");
 
-    const filePath = path.join(__dirname, `../../files/temp/${username}.png`);
+    const uniqueId = v4();
+
+    const filePath = path.join(`./temp/files/${uniqueId}${username}.png`);
     const canvas = createCanvas(128, 128);
     const ctx = canvas.getContext("2d");
 
