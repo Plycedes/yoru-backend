@@ -7,6 +7,7 @@ import {
   getAllVideos,
   getUserVideos,
   getLikedVideos,
+  searchVideos,
 } from "../controllers/video.controller.js";
 
 const router = Router();
@@ -24,5 +25,6 @@ router.route("/delete-video").post(verifyJWT, deleteVideo);
 router.route("/get-all-videos").get(getAllVideos);
 router.route("/get-user-videos").get(verifyJWT, getUserVideos);
 router.route("/get-liked-videos").get(verifyJWT, getLikedVideos);
+router.route("/search-videos").get(verifyJWT, searchVideos);
 
 export default router;
