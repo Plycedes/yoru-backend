@@ -1,12 +1,9 @@
-import express, { Request, Response } from "express";
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import connectDB from "./db";
+import { app } from "./app";
 
-const app = express();
-const port = 8000;
+dotenv.config({ path: "./env" });
 
-app.get("/", (req: Request, res: Response) => {
-    res.status(200).send({ status: "OK", statusCode: 200 });
-});
-
-app.listen(port, () => {
-    console.log(`Server running at port ${port}`);
-});
+const PORT: number = parseInt(process.env.PORT || "8000", 10);
