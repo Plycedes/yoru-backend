@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { JsonValue, JsonObject } from "./jsonTypes";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -7,7 +8,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath: string): Promise<any | null> => {
+const uploadOnCloudinary = async (localFilePath: string): Promise<JsonObject | null> => {
     try {
         if (!localFilePath) return null;
 
@@ -16,7 +17,12 @@ const uploadOnCloudinary = async (localFilePath: string): Promise<any | null> =>
         });
         console.log("File uploaded", response.url);
         fs.unlinkSync(localFilePath);
-        return response;
+
+        const result: JsonObject = {
+            url: response.secure_url,
+            public_id: response.public_id,
+        };
+        return result;
     } catch (error) {
         console.log("Error while uploading to cloudinary");
         fs.unlinkSync(localFilePath);
@@ -48,3 +54,5 @@ const deleteVideoFromCloudinary = async (publicId: string): Promise<any | null> 
         return null;
     }
 };
+
+export { uploadOnCloudinary, deleteFromCloudinary, deleteVideoFromCloudinary };
