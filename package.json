@@ -20,10 +20,12 @@
         "typescript": "^5.7.3"
     },
     "dependencies": {
+        "canvas": "^3.1.0",
         "cloudinary": "^2.5.1",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
-        "mongoose": "^8.9.5"
+        "mongoose": "^8.9.5",
+        "uuid": "^11.0.5"
     }
 }
