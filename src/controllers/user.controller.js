@@ -10,6 +10,7 @@ import {
 } from "../utils/cloudinary.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
+  console.log("Attempting to log in")
   const { email, username, password } = req.body;
 
   if ([email, username, password].some((field) => field?.trim() === "")) {
