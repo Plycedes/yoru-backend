@@ -4,7 +4,6 @@ import { app } from "./app.js";
 import fs from "fs";
 import path from "path";
 import https from "https";
-import http from "http";
 import { fileURLToPath } from "url";
 
 dotenv.config({ path: "./env" });
@@ -23,21 +22,15 @@ connectDB()
       console.log("Folder created");
     }
 
+    // Read SSL Certificates
     const options = {
       key: fs.readFileSync(SSL_KEY_PATH),
       cert: fs.readFileSync(SSL_CERT_PATH),
     };
 
-    https.createServer(options, app).listen(443, () => {
-      console.log("HTTPS Server Running at PORT: 443");
-    });
-
-    http.createServer(app).listen(80, () => {
-      console.log("HTTP Server Running at PORT: 80");
-    });
-
-    app.listen(8000, () => {
-      console.log("Server Running on custom PORT: 8000");
+    // Start HTTPS Server
+    https.createServer(options, app).listen(process.env.PORT || 8000, () => {
+      console.log(`HTTPS Server Running at PORT: ${process.env.PORT || 8000}`);
     });
   })
   .catch((err) => {
