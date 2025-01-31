@@ -7,8 +7,8 @@ import https from "https";
 
 dotenv.config({ path: "./env" });
 
-const SSL_KEY_PATH = path.join("..", "certs", "server.key");  // Private Key
-const SSL_CERT_PATH = path.join("..", "certs", "server.crt");  // Certificate
+const SSL_KEY_PATH = path.join(__dirname, "..", "certs", "server.key"); // Private Key
+const SSL_CERT_PATH = path.join(__dirname, "..", "certs", "server.crt"); // Certificate
 
 connectDB()
   .then(() => {
