@@ -4,15 +4,11 @@ import { app } from "./app.js";
 import fs from "fs";
 import path from "path";
 import https from "https";
-import { fileURLToPath } from "url";
 
 dotenv.config({ path: "./env" });
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const SSL_KEY_PATH = path.join(__dirname, "..", "certs", "server.key");
-const SSL_CERT_PATH = path.join(__dirname, "..", "certs", "server.crt");
+const SSL_KEY_PATH = path.join(__dirname, "..", "certs", "server.key"); // Private Key
+const SSL_CERT_PATH = path.join(__dirname, "..", "certs", "server.crt"); // Certificate
 
 connectDB()
   .then(() => {
