@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
-
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ApiError } from "../utils/ApiError";
 import { User, IUser } from "../models/user.model";
+import { JsonObject } from "../utils/jsonTypes";
 import { MulterRequest } from "../middlewares/multer.middleware";
 import { generateProfilePicture } from "../utils/generateProfilePicture";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
@@ -43,3 +43,20 @@ export const registerUser = asyncHandler(async (req: Request, res: Response): Pr
 
     return res.status(200).json(new ApiResponse(200, createdUser, "User created successfully"));
 });
+
+const generateAccessAndRefreshTokens = async (userId: string): Promise<JsonObject> => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) throw new ApiError(404, "User not found");
+
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+
+        user.refreshToken = refreshToken;
+        await user.save({ validateBeforeSave: false });
+
+        return { accessToken, refreshToken };
+    } catch (error) {
+        throw new ApiError(500, "Error generating tokens");
+    }
+};
