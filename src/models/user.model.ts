@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { JsonObject } from "../utils/jsonTypes";
@@ -67,7 +67,7 @@ userSchema.methods.isPasswordCorrect = async function (password: string): Promis
 
 userSchema.methods.generateAccessToken = function (): string {
     const payload: JsonObject = {
-        _id: this._id.toString(),
+        _id: (this._id as Types.ObjectId).toString(),
         email: this.email,
         username: this.username,
     };
@@ -86,7 +86,7 @@ userSchema.methods.generateAccessToken = function (): string {
 
 userSchema.methods.generateRefreshToken = function (): string {
     const payload: JsonObject = {
-        _id: this._id.toString(),
+        _id: (this._id as Types.ObjectId).toString(),
         email: this.email,
         username: this.username,
     };

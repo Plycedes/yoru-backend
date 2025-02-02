@@ -8,6 +8,7 @@ import { JsonObject } from "../utils/jsonTypes";
 import { MulterRequest } from "../middlewares/multer.middleware";
 import { generateProfilePicture } from "../utils/generateProfilePicture";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
+import { Types } from "mongoose";
 
 export const registerUser = asyncHandler(async (req: Request, res: Response): Promise<Response> => {
     const { email, username, password } = req.body;
@@ -60,3 +61,42 @@ const generateAccessAndRefreshTokens = async (userId: string): Promise<JsonObjec
         throw new ApiError(500, "Error generating tokens");
     }
 };
+
+export const loginUser = asyncHandler(async (req: Request, res: Response): Promise<Response> => {
+    const { email, username, password } = req.body;
+
+    if (!username && !email) {
+        throw new ApiError(400, "Username or email is required");
+    }
+
+    const user = (await User.findOne({ $or: [{ username }, { email }] })) as IUser;
+
+    if (!user) {
+        throw new ApiError(404, "User not registered");
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password);
+
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Incorrect Password");
+    }
+
+    const userId = (user._id as Types.ObjectId).toString();
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userId);
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+    const options = { httpOnly: true, secure: true };
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                { user: loggedInUser, accessToken, refreshToken },
+                "User logged in successfully"
+            )
+        );
+});
