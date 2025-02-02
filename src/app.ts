@@ -23,4 +23,8 @@ app.get("/", (req: Request, res: Response) => {
     res.status(200).send({ status: "OK" });
 });
 
+import userRouter from "./routers/user.router";
+
+app.use("/api/v1/users", userRouter);
+
 export { app };
