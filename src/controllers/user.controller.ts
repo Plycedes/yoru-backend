@@ -6,6 +6,7 @@ import { ApiError } from "../utils/ApiError";
 import { User, IUser } from "../models/user.model";
 import { JsonObject } from "../utils/jsonTypes";
 import { MulterRequest } from "../middlewares/multer.middleware";
+import { CustomRequest } from "../middlewares/auth.middleware";
 import { generateProfilePicture } from "../utils/generateProfilePicture";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import { Types } from "mongoose";
@@ -100,3 +101,20 @@ export const loginUser = asyncHandler(async (req: Request, res: Response): Promi
             )
         );
 });
+
+export const logoutUser = asyncHandler(
+    async (req: CustomRequest, res: Response): Promise<Response> => {
+        if (!req.user) {
+            return res.status(401).json(new ApiResponse(401, {}, "Unauthorized"));
+        }
+        await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: 1 } }, { new: true });
+
+        const options = { httpOnly: true, secure: true };
+
+        return res
+            .status(200)
+            .clearCookie("accessToken", options)
+            .clearCookie("refreshToken", options)
+            .json(new ApiResponse(200, {}, "User logged out"));
+    }
+);

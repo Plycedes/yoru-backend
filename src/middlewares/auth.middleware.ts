@@ -2,13 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/asyncHandler";
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.model";
+import { User, IUser } from "../models/user.model";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-interface CustomRequest extends Request {
-    user?: any;
+export interface CustomRequest extends Request {
+    user?: IUser;
 }
 
 export const verifyJWT = asyncHandler(
