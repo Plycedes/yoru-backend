@@ -173,3 +173,39 @@ export const changeCurrentPassword = asyncHandler(
         return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
     }
 );
+
+export const getCurrentUser = asyncHandler(
+    async (req: CustomRequest, res: Response): Promise<Response> => {
+        return res
+            .status(200)
+            .json(new ApiResponse(200, req.user, "Current User fetched successfully"));
+    }
+);
+
+export const updateUserAvatar = asyncHandler(
+    async (req: MulterRequest, res: Response): Promise<Response> => {
+        const avatarLocalPath = req.file?.path;
+
+        if (!avatarLocalPath) {
+            throw new ApiError(400, "Avatar file is missing");
+        }
+
+        console.log("File received");
+
+        const avatar = await uploadOnCloudinary(avatarLocalPath);
+        if (!avatar) throw new ApiError(400, "Error while uploading avatar");
+
+        const oldUser = await User.findById(req.user?._id).select("avatarId");
+        if (oldUser?.avatarId) {
+            await deleteFromCloudinary(oldUser.avatarId);
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user?._id,
+            { avatar: avatar.url, avatarId: avatar.public_id },
+            { new: true }
+        ).select("-password");
+
+        return res.status(200).json(new ApiResponse(200, user, "Avatar updated successfully"));
+    }
+);
