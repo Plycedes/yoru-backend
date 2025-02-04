@@ -2,7 +2,7 @@ import multer, { StorageEngine } from "multer";
 import { Request } from "express";
 import { v4 as uuidv4 } from "uuid";
 
-import { User, IUser } from "../models/user.model";
+import { IUser } from "../models/user.model";
 
 export interface MulterRequest<T = any> extends Request {
     user?: IUser;
