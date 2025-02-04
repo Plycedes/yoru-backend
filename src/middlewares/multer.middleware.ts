@@ -1,9 +1,12 @@
 import multer, { StorageEngine } from "multer";
 import { Request } from "express";
-import { CustomRequest } from "./auth.middleware";
 import { v4 as uuidv4 } from "uuid";
 
-export interface MulterRequest extends Request, CustomRequest {
+import { User, IUser } from "../models/user.model";
+
+export interface MulterRequest<T = any> extends Request {
+    user?: IUser;
+    body: T;
     file?: Express.Multer.File;
 }
 
