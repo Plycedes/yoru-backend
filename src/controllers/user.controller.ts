@@ -13,42 +13,48 @@ import { generateProfilePicture } from "../utils/generateProfilePicture";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 
 import { JsonObject } from "../types/jsonTypes";
-import { ChangePasswordRequestBody } from "../types/requestTypes";
+import {
+    RegisterRequestBody,
+    LoginRequestBody,
+    ChangePasswordRequestBody,
+} from "../types/requestTypes";
 
-export const registerUser = asyncHandler(async (req: Request, res: Response): Promise<Response> => {
-    const { email, username, password } = req.body;
+export const registerUser = asyncHandler(
+    async (req: CustomRequest<RegisterRequestBody>, res: Response): Promise<Response> => {
+        const { email, username, password } = req.body;
 
-    if ([email, username, password].some((field) => field?.trim() === "")) {
-        throw new ApiError(400, "No field can be empty");
+        if ([email, username, password].some((field) => field?.trim() === "")) {
+            throw new ApiError(400, "No field can be empty");
+        }
+
+        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+
+        if (existingUser) {
+            throw new ApiError(409, "Username or Email already exists");
+        }
+
+        const pfp = await generateProfilePicture(username);
+        if (!pfp) {
+            throw new ApiError(500, "Failed to generate profile picture");
+        }
+
+        const user = await User.create({
+            username,
+            email,
+            password,
+            avatar: pfp.url,
+            avatarId: pfp.public_id,
+        });
+
+        const createdUser = await User.findById(user._id).select("-password -refreshToken");
+
+        if (!createdUser) {
+            throw new ApiError(500, "Error while creating new user");
+        }
+
+        return res.status(200).json(new ApiResponse(200, createdUser, "User created successfully"));
     }
-
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-
-    if (existingUser) {
-        throw new ApiError(409, "Username or Email already exists");
-    }
-
-    const pfp = await generateProfilePicture(username);
-    if (!pfp) {
-        throw new ApiError(500, "Failed to generate profile picture");
-    }
-
-    const user = await User.create({
-        username,
-        email,
-        password,
-        avatar: pfp.url,
-        avatarId: pfp.public_id,
-    });
-
-    const createdUser = await User.findById(user._id).select("-password -refreshToken");
-
-    if (!createdUser) {
-        throw new ApiError(500, "Error while creating new user");
-    }
-
-    return res.status(200).json(new ApiResponse(200, createdUser, "User created successfully"));
-});
+);
 
 const generateAccessAndRefreshTokens = async (userId: string): Promise<JsonObject> => {
     try {
@@ -67,44 +73,46 @@ const generateAccessAndRefreshTokens = async (userId: string): Promise<JsonObjec
     }
 };
 
-export const loginUser = asyncHandler(async (req: Request, res: Response): Promise<Response> => {
-    const { email, username, password } = req.body;
+export const loginUser = asyncHandler(
+    async (req: CustomRequest<LoginRequestBody>, res: Response): Promise<Response> => {
+        const { email, username, password } = req.body;
 
-    if (!username && !email) {
-        throw new ApiError(400, "Username or email is required");
+        if (!username && !email) {
+            throw new ApiError(400, "Username or email is required");
+        }
+
+        const user = (await User.findOne({ $or: [{ username }, { email }] })) as IUser;
+
+        if (!user) {
+            throw new ApiError(404, "User not registered");
+        }
+
+        const isPasswordValid = await user.isPasswordCorrect(password);
+
+        if (!isPasswordValid) {
+            throw new ApiError(401, "Incorrect Password");
+        }
+
+        const userId = (user._id as Types.ObjectId).toString();
+
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userId);
+        const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+        const options = { httpOnly: true, secure: true };
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", refreshToken, options)
+            .json(
+                new ApiResponse(
+                    200,
+                    { user: loggedInUser, accessToken, refreshToken },
+                    "User logged in successfully"
+                )
+            );
     }
-
-    const user = (await User.findOne({ $or: [{ username }, { email }] })) as IUser;
-
-    if (!user) {
-        throw new ApiError(404, "User not registered");
-    }
-
-    const isPasswordValid = await user.isPasswordCorrect(password);
-
-    if (!isPasswordValid) {
-        throw new ApiError(401, "Incorrect Password");
-    }
-
-    const userId = (user._id as Types.ObjectId).toString();
-
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userId);
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
-
-    const options = { httpOnly: true, secure: true };
-
-    return res
-        .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
-        .json(
-            new ApiResponse(
-                200,
-                { user: loggedInUser, accessToken, refreshToken },
-                "User logged in successfully"
-            )
-        );
-});
+);
 
 export const logoutUser = asyncHandler(
     async (req: CustomRequest, res: Response): Promise<Response> => {

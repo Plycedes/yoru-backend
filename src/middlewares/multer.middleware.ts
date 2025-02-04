@@ -2,6 +2,7 @@ import multer, { StorageEngine } from "multer";
 import { Request } from "express";
 import { CustomRequest } from "./auth.middleware";
 import { v4 as uuidv4 } from "uuid";
+import { ChangePasswordRequestBody } from "../types/requestTypes";
 
 export interface MulterRequest extends Request, CustomRequest {
     file?: Express.Multer.File;
