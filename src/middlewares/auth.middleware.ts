@@ -6,8 +6,9 @@ import { User, IUser } from "../models/user.model";
 import dotenv from "dotenv";
 
 dotenv.config();
-export interface CustomRequest extends Request {
+export interface CustomRequest<T = any> extends Request {
     user?: IUser;
+    body: T;
 }
 
 export const verifyJWT = asyncHandler(

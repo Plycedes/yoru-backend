@@ -1,15 +1,19 @@
 import jwt from "jsonwebtoken";
+import { Types } from "mongoose";
 import { Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler";
-import { ApiResponse } from "../utils/ApiResponse";
-import { ApiError } from "../utils/ApiError";
+
 import { User, IUser } from "../models/user.model";
-import { JsonObject } from "../types/jsonTypes";
 import { MulterRequest } from "../middlewares/multer.middleware";
 import { CustomRequest } from "../middlewares/auth.middleware";
+
+import { ApiError } from "../utils/ApiError";
+import { asyncHandler } from "../utils/asyncHandler";
+import { ApiResponse } from "../utils/ApiResponse";
 import { generateProfilePicture } from "../utils/generateProfilePicture";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
-import { Types } from "mongoose";
+
+import { JsonObject } from "../types/jsonTypes";
+import { ChangePasswordRequestBody } from "../types/requestTypes";
 
 export const registerUser = asyncHandler(async (req: Request, res: Response): Promise<Response> => {
     const { email, username, password } = req.body;
@@ -159,10 +163,15 @@ export const refreshAccessToken = asyncHandler(
 );
 
 export const changeCurrentPassword = asyncHandler(
-    async (req: CustomRequest, res: Response): Promise<Response> => {
+    async (req: CustomRequest<ChangePasswordRequestBody>, res: Response): Promise<Response> => {
         const { oldPassword, newPassword } = req.body;
 
+        if (!oldPassword || !newPassword) {
+            throw new ApiError(400, "Both old and new passwords are required");
+        }
+
         const user = (await User.findById(req.user?._id)) as IUser;
+        if (!user) throw new ApiError(404, "User not found");
 
         const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
         if (!isPasswordCorrect) throw new ApiError(400, "Invalid old password");
