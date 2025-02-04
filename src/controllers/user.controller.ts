@@ -4,7 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ApiError } from "../utils/ApiError";
 import { User, IUser } from "../models/user.model";
-import { JsonObject } from "../utils/jsonTypes";
+import { JsonObject } from "../types/jsonTypes";
 import { MulterRequest } from "../middlewares/multer.middleware";
 import { CustomRequest } from "../middlewares/auth.middleware";
 import { generateProfilePicture } from "../utils/generateProfilePicture";

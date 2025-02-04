@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import { JsonObject } from "./jsonTypes";
+import { JsonObject } from "../types/jsonTypes";
 import dotenv from "dotenv";
 
 dotenv.config();

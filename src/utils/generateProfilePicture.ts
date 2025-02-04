@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { uploadOnCloudinary } from "./cloudinary";
-import { JsonObject, JsonValue } from "./jsonTypes";
+import { JsonObject, JsonValue } from "../types/jsonTypes";
 
 export const generateProfilePicture = async (username: string): Promise<JsonObject | null> => {
     try {
