@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Types } from "mongoose";
-import { Request, Response } from "express";
+import { Response } from "express";
 
 import { User, IUser } from "../models/user.model";
 import { MulterRequest } from "../middlewares/multer.middleware";
