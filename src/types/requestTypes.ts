@@ -14,3 +14,8 @@ export interface ChangePasswordRequestBody {
     oldPassword: string;
     newPassword: string;
 }
+
+export interface CreateVideoBody {
+    title: string;
+    prompt: string;
+}
