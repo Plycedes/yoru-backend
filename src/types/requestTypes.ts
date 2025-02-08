@@ -19,3 +19,7 @@ export interface CreateVideoBody {
     title: string;
     prompt: string;
 }
+
+export interface VideoIdType {
+    vidId: string;
+}
