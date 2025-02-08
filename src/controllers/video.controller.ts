@@ -9,7 +9,6 @@ import { CustomRequest } from "../middlewares/auth.middleware";
 import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/asyncHandler";
 import { ApiResponse } from "../utils/ApiResponse";
-import { generateProfilePicture } from "../utils/generateProfilePicture";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import { CreateVideoBody } from "../types/requestTypes";
 
