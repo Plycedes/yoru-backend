@@ -14,7 +14,7 @@ import {
     uploadOnCloudinary,
     deleteFromCloudinary,
     deleteVideoFromCloudinary,
-} from "../utils/cloudinary.js";
+} from "../utils/cloudinary";
 import { CreateVideoBody, VideoIdType } from "../types/requestTypes";
 
 export const createVideo = asyncHandler(
