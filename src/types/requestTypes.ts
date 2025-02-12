@@ -31,3 +31,8 @@ export interface PaginationType extends ParsedQs {
     limit?: string;
     query?: string;
 }
+
+export interface LikesRequestBody {
+    creatorId?: string;
+    videoId: string;
+}

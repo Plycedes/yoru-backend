@@ -25,8 +25,10 @@ app.get("/", (req: Request, res: Response) => {
 
 import userRouter from "./routers/user.router";
 import videoRouter from "./routers/video.router";
+import likeRouter from "./routers/like.router";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/videos", videoRouter);
+app.use("/api/v1/likes", likeRouter);
 
 export { app };
