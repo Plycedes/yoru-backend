@@ -147,3 +147,46 @@ export const getAllVideos = asyncHandler(
         );
     }
 );
+
+export const getUserVideos = asyncHandler(async (req: CustomRequest, res: Response) => {
+    const userId = req.user?._id;
+    if (!userId) throw new ApiError(401, "Unauthorized");
+
+    const pipeline: PipelineStage[] = [
+        { $match: { creator: userId } },
+        {
+            $lookup: {
+                from: "users",
+                localField: "creator",
+                foreignField: "_id",
+                as: "creatorDetails",
+            },
+        },
+        {
+            $unwind: {
+                path: "$creatorDetails",
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        {
+            $project: {
+                _id: 1,
+                title: 1,
+                prompt: 1,
+                thumbnail: 1,
+                video: 1,
+                createdAt: 1,
+                "creatorDetails._id": 1,
+                "creatorDetails.username": 1,
+                "creatorDetails.avatar": 1,
+            },
+        },
+        { $sort: { createdAt: -1 } },
+    ];
+
+    const userVideos = await Video.aggregate(pipeline);
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, userVideos, "Fetched user's videos successfully"));
+});
