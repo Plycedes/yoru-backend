@@ -236,3 +236,69 @@ export const getLikedVideos = asyncHandler(async (req: CustomRequest, res: Respo
         .status(200)
         .json(new ApiResponse(200, likedVideos, "Fetched all bookmarked videos successfully"));
 });
+
+export const searchVideos = asyncHandler(
+    async (req: CustomRequest<{}, PaginationType>, res: Response) => {
+        const { query, page = "1", limit = "10" } = req.query;
+
+        if (!query) throw new ApiError(400, "Query parameter is required");
+
+        const pipeline: PipelineStage[] = [
+            {
+                $match: {
+                    title: { $regex: query, $options: "i" },
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "creator",
+                    foreignField: "_id",
+                    as: "creatorDetails",
+                },
+            },
+            {
+                $unwind: {
+                    path: "$creatorDetails",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    prompt: 1,
+                    thumbnail: 1,
+                    video: 1,
+                    "creatorDetails._id": 1,
+                    "creatorDetails.username": 1,
+                    "creatorDetails.avatar": 1,
+                },
+            },
+            { $sort: { createdAt: -1 } },
+            { $skip: (parseInt(page) - 1) * parseInt(limit) },
+            { $limit: parseInt(limit) },
+        ];
+
+        const videos = await Video.aggregate(pipeline);
+        const totalVideos = await Video.countDocuments({
+            title: { $regex: query, $options: "i" },
+        });
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    data: videos,
+                    pagination: {
+                        total: totalVideos,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        totalPages: Math.ceil(totalVideos / parseInt(limit)),
+                    },
+                },
+                "Fetched searched videos successfully"
+            )
+        );
+    }
+);
