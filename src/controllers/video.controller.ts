@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Types } from "mongoose";
+import { Types, PipelineStage } from "mongoose";
 import { Response } from "express";
 
 import { Video } from "../models/video.model";
@@ -15,7 +15,7 @@ import {
     deleteFromCloudinary,
     deleteVideoFromCloudinary,
 } from "../utils/cloudinary";
-import { CreateVideoBody, VideoIdType } from "../types/requestTypes";
+import { CreateVideoBody, VideoIdType, PaginationType } from "../types/requestTypes";
 
 export const createVideo = asyncHandler(
     async (req: MulterRequest<CreateVideoBody>, res: Response) => {
@@ -60,7 +60,7 @@ export const createVideo = asyncHandler(
 );
 
 export const deleteVideo = asyncHandler(
-    async (req: CustomRequest<VideoIdType>, res: Response): Promise<Response> => {
+    async (req: CustomRequest<VideoIdType, {}>, res: Response): Promise<Response> => {
         const { vidId } = req.body;
         const userId = (req.user?._id as Types.ObjectId).toString();
 
@@ -91,45 +91,59 @@ export const deleteVideo = asyncHandler(
     }
 );
 
-// Create Video
-export const createVideo = asyncHandler(
-    async (req: MulterRequest<CreateVideoBody>, res: Response) => {
-        const { title, prompt } = req.body;
+export const getAllVideos = asyncHandler(
+    async (req: CustomRequest<{}, PaginationType>, res: Response) => {
+        const { page = "1", limit = "10" } = req.query;
 
-        if (!title || !prompt) {
-            throw new ApiError(409, "Title and prompt cannot be empty");
-        }
+        const pipeline: PipelineStage[] = [
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "creator",
+                    foreignField: "_id",
+                    as: "creatorDetails",
+                },
+            },
+            {
+                $unwind: {
+                    path: "$creatorDetails",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    prompt: 1,
+                    thumbnail: 1,
+                    video: 1,
+                    "creatorDetails._id": 1,
+                    "creatorDetails.username": 1,
+                    "creatorDetails.avatar": 1,
+                },
+            },
+            { $sort: { createdAt: -1 } },
+            { $skip: (parseInt(page) - 1) * parseInt(limit) },
+            { $limit: parseInt(limit) },
+        ];
 
-        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-        const videoFile = files?.video?.[0];
-        const thumbnailFile = files?.thumbnail?.[0];
+        const videos = await Video.aggregate(pipeline);
+        const totalVideos = await Video.countDocuments();
 
-        if (!videoFile || !thumbnailFile) {
-            throw new ApiError(409, "Both video and thumbnail are required");
-        }
-
-        const video = await uploadOnCloudinary(videoFile.path);
-        if (!video.url) {
-            throw new ApiError(400, "Error while uploading video");
-        }
-
-        const thumbnail = await uploadOnCloudinary(thumbnailFile.path);
-        if (!thumbnail.url) {
-            throw new ApiError(400, "Error while uploading thumbnail");
-        }
-
-        const videoObject = await Video.create({
-            title,
-            prompt,
-            thumbnail: thumbnail.url,
-            thumbnailId: thumbnail.public_id,
-            video: video.url,
-            videoId: video.public_id,
-            creator: req.user?._id,
-        });
-
-        return res
-            .status(200)
-            .json(new ApiResponse(200, videoObject, "Video created successfully"));
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    data: videos,
+                    pagination: {
+                        total: totalVideos,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        totalPages: Math.ceil(totalVideos / parseInt(limit)),
+                    },
+                },
+                "Fetched all videos successfully"
+            )
+        );
     }
 );

@@ -1,3 +1,5 @@
+import { ParsedQs } from "qs";
+
 export interface RegisterRequestBody {
     email: string;
     username: string;
@@ -22,4 +24,10 @@ export interface CreateVideoBody {
 
 export interface VideoIdType {
     vidId: string;
+}
+
+export interface PaginationType extends ParsedQs {
+    page?: string;
+    limit?: string;
+    query?: string;
 }
