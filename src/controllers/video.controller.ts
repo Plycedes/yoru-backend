@@ -190,3 +190,49 @@ export const getUserVideos = asyncHandler(async (req: CustomRequest, res: Respon
         .status(200)
         .json(new ApiResponse(200, userVideos, "Fetched user's videos successfully"));
 });
+
+export const getLikedVideos = asyncHandler(async (req: CustomRequest, res: Response) => {
+    const userId = req.user?._id;
+    if (!userId) throw new ApiError(401, "Unauthorized");
+
+    const pipeline: PipelineStage[] = [
+        { $match: { userId } },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "videoId",
+                foreignField: "_id",
+                as: "likedVideos",
+            },
+        },
+        { $unwind: "$likedVideos" },
+        {
+            $lookup: {
+                from: "users",
+                localField: "likedVideos.creator",
+                foreignField: "_id",
+                as: "creatorDetails",
+            },
+        },
+        { $unwind: "$creatorDetails" },
+        {
+            $project: {
+                _id: "$likedVideos._id",
+                title: "$likedVideos.title",
+                thumbnail: "$likedVideos.thumbnail",
+                video: "$likedVideos.video",
+                prompt: "$likedVideos.prompt",
+                "creatorDetails._id": 1,
+                "creatorDetails.username": 1,
+                "creatorDetails.avatar": 1,
+            },
+        },
+        { $sort: { createdAt: -1 } },
+    ];
+
+    const likedVideos = await Like.aggregate(pipeline);
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, likedVideos, "Fetched all bookmarked videos successfully"));
+});
