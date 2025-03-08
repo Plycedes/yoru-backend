@@ -23,6 +23,10 @@ app.get("/", (req: Request, res: Response) => {
     res.status(200).send({ status: "OK" });
 });
 
+app.get("/api/v1/", (req: Request, res: Response) => {
+    res.status(200).send({ status: "OK" });
+});
+
 import userRouter from "./routers/user.router";
 import videoRouter from "./routers/video.router";
 import likeRouter from "./routers/like.router";
