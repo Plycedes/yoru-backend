@@ -76,3 +76,9 @@ export const editComment = asyncHandler(async (req: CustomRequest<CommentBody>, 
 
     return res.status(200).json(new ApiResponse(200, newComment, "Comment edited successfully"));
 });
+
+export const getComments = asyncHandler(async (req: CustomRequest<CommentBody>, res: Response) => {
+    const { videoId } = req.body;
+    const comments = await Comment.find({ videoId });
+    return res.status(200).json(new ApiResponse(200, comments, "Fetched comments successfully"));
+});
