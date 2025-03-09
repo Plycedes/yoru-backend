@@ -45,3 +45,7 @@ export interface CreateCommentBody {
     comment: string;
     videoId: string;
 }
+
+export interface DeleteCommentBody {
+    commentId: string;
+}

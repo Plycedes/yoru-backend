@@ -97,7 +97,7 @@ export const deleteVideo = asyncHandler(
 
 export const getAllVideos = asyncHandler(
     async (req: CustomRequest<{}, PaginationType>, res: Response) => {
-        const { page = "1", limit = "10" } = req.query;
+        const { page = "1", limit = "5" } = req.query;
 
         const pipeline: PipelineStage[] = [
             {
@@ -121,6 +121,7 @@ export const getAllVideos = asyncHandler(
                     prompt: 1,
                     thumbnail: 1,
                     video: 1,
+                    createdAt: 1,
                     "creatorDetails._id": 1,
                     "creatorDetails.username": 1,
                     "creatorDetails.avatar": 1,
@@ -229,6 +230,7 @@ export const getLikedVideos = asyncHandler(async (req: CustomRequest, res: Respo
                 "creatorDetails._id": 1,
                 "creatorDetails.username": 1,
                 "creatorDetails.avatar": 1,
+                createdAt: 1,
             },
         },
         { $sort: { createdAt: -1 } },
@@ -274,6 +276,7 @@ export const searchVideos = asyncHandler(
                     prompt: 1,
                     thumbnail: 1,
                     video: 1,
+                    createdAt: 1,
                     "creatorDetails._id": 1,
                     "creatorDetails.username": 1,
                     "creatorDetails.avatar": 1,
