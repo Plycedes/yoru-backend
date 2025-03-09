@@ -14,7 +14,12 @@ import {
     deleteFromCloudinary,
     deleteVideoFromCloudinary,
 } from "../utils/cloudinary";
-import { CreateVideoBody, VideoIdType, PaginationType } from "../types/requestTypes";
+import {
+    CreateVideoBody,
+    VideoIdType,
+    PaginationType,
+    VideoRequestBody,
+} from "../types/requestTypes";
 
 export const createVideo = asyncHandler(
     async (req: MulterRequest<CreateVideoBody>, res: Response) => {
@@ -299,5 +304,14 @@ export const searchVideos = asyncHandler(
                 "Fetched searched videos successfully"
             )
         );
+    }
+);
+
+export const getVideo = asyncHandler(
+    async (req: CustomRequest<VideoRequestBody>, res: Response) => {
+        const { videoId } = req.body;
+        console.log("VideId", videoId);
+        const video = await Video.findById(videoId);
+        return res.status(200).json(new ApiResponse(200, video, "Fetched video successfully"));
     }
 );

@@ -36,3 +36,7 @@ export interface LikesRequestBody {
     creatorId?: string;
     videoId: string;
 }
+
+export interface VideoRequestBody {
+    videoId: string;
+}
