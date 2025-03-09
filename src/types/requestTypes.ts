@@ -40,3 +40,8 @@ export interface LikesRequestBody {
 export interface VideoRequestBody {
     videoId: string;
 }
+
+export interface CreateCommentBody {
+    comment: string;
+    videoId: string;
+}
