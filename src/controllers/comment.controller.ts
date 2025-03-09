@@ -13,5 +13,17 @@ export const createComment = asyncHandler(
         if (!comment || !videoId) {
             throw new ApiError(409, "No field can be empty");
         }
+
+        const createdComment = await Comment.create({
+            comment,
+            videoId,
+            userId: req.user!._id,
+        });
+
+        if (!createComment) {
+            throw new ApiError(501, "Something went wrong while creating the comment");
+        }
+
+        res.status(200).json(new ApiResponse(200, createdComment, "Comment created successfully"));
     }
 );
