@@ -1,3 +1,4 @@
+import { networkInterfaces } from "node:os";
 import { ParsedQs } from "qs";
 
 export interface RegisterRequestBody {
@@ -41,11 +42,8 @@ export interface VideoRequestBody {
     videoId: string;
 }
 
-export interface CreateCommentBody {
-    comment: string;
-    videoId: string;
-}
-
-export interface DeleteCommentBody {
-    commentId: string;
+export interface CommentBody {
+    comment?: string;
+    videoId?: string;
+    commentId?: string;
 }

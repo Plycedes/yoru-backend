@@ -4,10 +4,10 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { CustomRequest } from "../middlewares/auth.middleware";
-import { CreateCommentBody, DeleteCommentBody } from "../types/requestTypes";
+import { CommentBody } from "../types/requestTypes";
 
 export const createComment = asyncHandler(
-    async (req: CustomRequest<CreateCommentBody>, res: Response) => {
+    async (req: CustomRequest<CommentBody>, res: Response) => {
         const { comment, videoId } = req.body;
 
         if (!comment || !videoId) {
@@ -31,16 +31,16 @@ export const createComment = asyncHandler(
 );
 
 export const deleteComment = asyncHandler(
-    async (req: CustomRequest<DeleteCommentBody>, res: Response) => {
+    async (req: CustomRequest<CommentBody>, res: Response) => {
         const { commentId } = req.body;
-        const userId = req.user!._id;
+        const userId: string = req.user!._id as string;
 
         const comment = await Comment.findById(commentId);
 
         if (!comment) {
             throw new ApiError(404, "Comment not found");
         }
-        if (comment.userId != userId) {
+        if (comment.userId.toString() != userId) {
             throw new ApiError(403, "Unauthorized");
         }
 
@@ -53,3 +53,26 @@ export const deleteComment = asyncHandler(
         return res.status(200).json(new ApiResponse(200, {}, "Comment deleted successfully"));
     }
 );
+
+export const editComment = asyncHandler(async (req: CustomRequest<CommentBody>, res: Response) => {
+    const { comment, commentId } = req.body;
+    const userId: string = req.user!._id as string;
+
+    if (!comment || !commentId) {
+        throw new ApiError(409, "No field can be empty");
+    }
+
+    const oldComment = await Comment.findById(commentId);
+
+    if (!oldComment) {
+        throw new ApiError(404, "Comment not found");
+    }
+    if (oldComment.userId.toString() != userId) {
+        console.log(oldComment.userId, "   ", userId);
+        throw new ApiError(403, "Unauthorized");
+    }
+
+    const newComment = await Comment.findByIdAndUpdate(commentId, { comment }, { new: true });
+
+    return res.status(200).json(new ApiResponse(200, newComment, "Comment edited successfully"));
+});
