@@ -313,8 +313,40 @@ export const searchVideos = asyncHandler(
 export const getVideo = asyncHandler(
     async (req: CustomRequest<VideoRequestBody>, res: Response) => {
         const { videoId } = req.body;
-        console.log("VideId", videoId);
-        const video = await Video.findById(videoId);
+        console.log("VideoId", videoId);
+
+        const pipeline: PipelineStage[] = [
+            { $match: { _id: new Types.ObjectId(videoId) } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "creator",
+                    foreignField: "_id",
+                    as: "creatorDetails",
+                },
+            },
+            {
+                $unwind: {
+                    path: "$creatorDetails",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    prompt: 1,
+                    video: 1,
+                    thumbnail: 1,
+                    createdAt: 1,
+                    "creatorDetails._id": 1,
+                    "creatorDetails.username": 1,
+                    "creatorDetails.avatar": 1,
+                },
+            },
+        ];
+
+        const video = await Video.aggregate(pipeline);
         return res.status(200).json(new ApiResponse(200, video, "Fetched video successfully"));
     }
 );
