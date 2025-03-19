@@ -1,10 +1,11 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { Comment } from "../models/comment.model";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { CustomRequest } from "../middlewares/auth.middleware";
-import { CommentBody } from "../types/requestTypes";
+import { CommentBody, PaginationType } from "../types/requestTypes";
+import { Types, PipelineStage } from "mongoose";
 
 export const createComment = asyncHandler(
     async (req: CustomRequest<CommentBody>, res: Response) => {
@@ -77,8 +78,46 @@ export const editComment = asyncHandler(async (req: CustomRequest<CommentBody>, 
     return res.status(200).json(new ApiResponse(200, newComment, "Comment edited successfully"));
 });
 
-export const getComments = asyncHandler(async (req: CustomRequest<CommentBody>, res: Response) => {
-    const { videoId } = req.body;
-    const comments = await Comment.find({ videoId });
-    return res.status(200).json(new ApiResponse(200, comments, "Fetched comments successfully"));
-});
+export const getComments = asyncHandler(
+    async (req: CustomRequest<CommentBody, PaginationType>, res: Response) => {
+        const { videoId } = req.body;
+        const { page = "1", limit = "5" } = req.query;
+
+        const pipeline: PipelineStage[] = [
+            { $match: { videoId: new Types.ObjectId(videoId) } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "writer",
+                },
+            },
+            {
+                $unwind: {
+                    path: "$writer",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    comment: 1,
+                    videoId: 1,
+                    createdAt: 1,
+                    "writer._id": 1,
+                    "writer.username": 1,
+                    "writer.avatar": 1,
+                },
+            },
+            { $sort: { createdAt: -1 } },
+            { $skip: (parseInt(page) - 1) * parseInt(limit) },
+            { $limit: parseInt(limit) },
+        ];
+
+        const comments = await Comment.aggregate(pipeline);
+        return res
+            .status(200)
+            .json(new ApiResponse(200, comments, "Fetched comments successfully"));
+    }
+);
