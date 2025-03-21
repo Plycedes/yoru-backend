@@ -47,3 +47,7 @@ export interface CommentBody {
     videoId?: string;
     commentId?: string;
 }
+
+export interface FollowBody {
+    followed?: string;
+}

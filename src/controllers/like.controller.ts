@@ -1,4 +1,3 @@
-import { Types, PipelineStage } from "mongoose";
 import { Response } from "express";
 
 import { Like } from "../models/like.model";

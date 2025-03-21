@@ -31,10 +31,12 @@ import userRouter from "./routers/user.router";
 import videoRouter from "./routers/video.router";
 import likeRouter from "./routers/like.router";
 import commentRouter from "./routers/comment.router";
+import followRouter from "./routers/follow.router";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/videos", videoRouter);
 app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/follows", followRouter);
 
 export { app };
