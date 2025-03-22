@@ -313,6 +313,7 @@ export const searchVideos = asyncHandler(
 export const getVideo = asyncHandler(
     async (req: CustomRequest<VideoRequestBody>, res: Response) => {
         const { videoId } = req.body;
+        const userId: string = req.user?._id as string;
         console.log("VideoId", videoId);
 
         const pipeline: PipelineStage[] = [
@@ -332,6 +333,76 @@ export const getVideo = asyncHandler(
                 },
             },
             {
+                $lookup: {
+                    from: "follows",
+                    let: { creatorId: "$creatorDetails._id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$followed", "$$creatorId"] },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                followersCount: { $sum: 1 },
+                            },
+                        },
+                    ],
+                    as: "followersData",
+                },
+            },
+            {
+                $lookup: {
+                    from: "follows",
+                    let: { creatorId: "$creatorDetails._id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$followed", "$$creatorId"] },
+                                        { $eq: ["$follower", new Types.ObjectId(userId)] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: "isFollowingData",
+                },
+            },
+            {
+                $lookup: {
+                    from: "likes",
+                    let: { videoId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$videoId", "$$videoId"] },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                likesCount: { $sum: 1 },
+                            },
+                        },
+                    ],
+                    as: "likesData",
+                },
+            },
+            {
+                $addFields: {
+                    followersCount: {
+                        $ifNull: [{ $arrayElemAt: ["$followersData.followersCount", 0] }, 0],
+                    },
+                    isFollowing: { $gt: [{ $size: "$isFollowingData" }, 0] },
+                    likesCount: {
+                        $ifNull: [{ $arrayElemAt: ["$likesData.likesCount", 0] }, 0],
+                    },
+                },
+            },
+            {
                 $project: {
                     _id: 1,
                     title: 1,
@@ -342,6 +413,9 @@ export const getVideo = asyncHandler(
                     "creatorDetails._id": 1,
                     "creatorDetails.username": 1,
                     "creatorDetails.avatar": 1,
+                    followersCount: 1,
+                    isFollowing: 1,
+                    likesCount: 1,
                 },
             },
         ];
